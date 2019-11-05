@@ -13,7 +13,7 @@ warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
 file = "hosts.txt"
 user = 'helo'
-password = 'toor'
+password = 'M4gd4l3n4'
 executable = "hostname"
 arguments = "/all"
 port = 22
@@ -47,20 +47,20 @@ for serverL in linuxPCs:
         client.connect(ip, port=port, username=user, password=password)
         stdin, stdout, stderr = client.exec_command(executable)
         print("Server: " + serverL + " Hostname: " + stdout.read())
+    except:
+        print("Could not connect to host over SSH: " + serverL)
     finally:
         client.close()
 
-print("Testing all Windows server for access")    
-for serverL in windowsPCs:
+print("\nTesting all Windows server for access")    
+for serverW in windowsPCs:
     c = Client(ip, username=user, password=password, encrypt=False)
     try:
     	c.connect()
     	c.create_service()
     	stdout = c.run_executable("cmd.exe", arguments="whoami")
+        c.remove_service()
+    except:
+        print("Could not connect to host over pyPSexec: " + serverW)
     finally:
-    	c.remove_service()
     	c.disconnect()
-
-    output = []
-    output = stdout[0].decode("utf-8")
-    print(output.split("\r\n")[1:3])
