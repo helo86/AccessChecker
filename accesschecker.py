@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
 file = "hosts.txt"
-user = 'helo'
+user = 'username'
 password = 'password'
 executable = "hostname"
 arguments = "/all"
