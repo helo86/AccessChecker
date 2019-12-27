@@ -13,7 +13,7 @@ warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
 file = "hosts.txt"
 user = 'helo'
-password = 'M4gd4l3n4'
+password = 'password'
 executable = "hostname"
 arguments = "/all"
 port = 22
