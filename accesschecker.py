@@ -12,8 +12,9 @@ import warnings
 warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
 file = "hosts.txt"
-user = 'username'
-password = 'password'
+domain = raw_input("Domain: ")
+user = raw_input("Username: ")
+password = raw_input("Password: ")
 executable = "hostname"
 arguments = "/all"
 port = 22
@@ -46,21 +47,25 @@ for serverL in linuxPCs:
         client.set_missing_host_key_policy(paramiko.WarningPolicy)
         client.connect(ip, port=port, username=user, password=password)
         stdin, stdout, stderr = client.exec_command(executable)
-        print("Server: " + serverL + " Hostname: " + stdout.read())
+        print("Success | Server: " + serverL + " Hostname: " + stdout.read())
     except:
         print("Could not connect to host over SSH: " + serverL)
     finally:
         client.close()
 
-print("\nTesting all Windows server for access")    
+#  crackmapexec smb hostW -d domain -u user -p password -X 'whoami'
+print("\nTesting all Windows server for access")
 for serverW in windowsPCs:
-    c = Client(ip, username=user, password=password, encrypt=False)
+    c = Client(ip, username=domain+"\/"+user, password=password, encrypt=False)
     try:
-    	c.connect()
-    	c.create_service()
-    	stdout = c.run_executable("cmd.exe", arguments="whoami")
+        c.connect()
+        c.create_service()
+        stdout = c.run_executable("cmd.exe", arguments="whoami")
+        output = []
+        output = stdout[0].decode("utf-8")
+        print(output.split("\r\n")[1:3])
         c.remove_service()
     except:
         print("Could not connect to host over pyPSexec: " + serverW)
     finally:
-    	c.disconnect()
+        c.disconnect()
