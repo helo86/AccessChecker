@@ -8,36 +8,45 @@ import paramiko
 import nmap
 import fileinput
 import socket
+import re
+import getpass
 import warnings
 warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
-file = "hosts.txt"
 domain = raw_input("Domain: ")
 user = raw_input("Username: ")
-password = raw_input("Password: ")
+password = getpass.getpass("Password: ")
 executable = "hostname"
 arguments = "/all"
 port = 22
+ipList = []
 linuxPCs = []
 windowsPCs = []
+
+#Extract IPs
+hostfile = list(open('hosts.txt', 'r').read().split('\n'))
+for entry in hostfile:
+        ips = re.findall(r'[0-9]+(?:\.[0-9]+){3}', entry)
+        for ip in ips:
+                ipList.append(ip)
 
 #NMAP
 nm = nmap.PortScanner()
 
-with open(file) as ipFile:
-    for ipLine in ipFile:
-        ip = ipLine.strip()
-        if ip: # just in case there was a blank line
-            nm.scan(ip, arguments='-O')
-            print("Server: " + ip + " " + nm[ip].hostname())
-            operatingOS = nm[ip]['osmatch'][0]['osclass'][0]['osfamily']
-            print("OS: " + operatingOS)
+for ip in ipList:
+    try:
+        nm.scan(ip, arguments='-O')
+        print("Server: " + ip + " " + nm[ip].hostname())
+        operatingOS = nm[ip]['osmatch'][0]['osclass'][0]['osfamily']
+        print("OS: " + operatingOS)
 
-            if operatingOS == 'Linux':
-                linuxPCs.append(ip)
+        if operatingOS == 'Linux':
+            linuxPCs.append(ip)
 
-            if operatingOS == 'Windows':
-                windowsPCs.append(ip)
+        if operatingOS == 'Windows':
+            windowsPCs.append(ip)
+    except:
+        print("Host: " + ip + " not accessible")
 
 print("\nTesting all Linux server for access")
 for serverL in linuxPCs:
