@@ -13,6 +13,10 @@ import getpass
 import warnings
 warnings.filterwarnings(action='ignore',module='.*paramiko.*')
 
+#Check if it is running as root
+if not os.geteuid() == 0:
+    sys.exit("\nOnly root can run this script\n")
+
 domain = raw_input("Domain: ")
 user = raw_input("Username: ")
 password = getpass.getpass("Password: ")
@@ -35,7 +39,7 @@ nm = nmap.PortScanner()
 
 for ip in ipList:
     try:
-        nm.scan(ip, arguments='-O')
+        nm.scan(ip, arguments='-Pn -O')
         print("Server: " + ip + " " + nm[ip].hostname())
         operatingOS = nm[ip]['osmatch'][0]['osclass'][0]['osfamily']
         print("OS: " + operatingOS)
@@ -65,16 +69,7 @@ for serverL in linuxPCs:
 #  crackmapexec smb hostW -d domain -u user -p password -X 'whoami'
 print("\nTesting all Windows server for access")
 for serverW in windowsPCs:
-    c = Client(ip, username=domain+"\/"+user, password=password, encrypt=False)
     try:
-        c.connect()
-        c.create_service()
-        stdout = c.run_executable("cmd.exe", arguments="whoami")
-        output = []
-        output = stdout[0].decode("utf-8")
-        print(output.split("\r\n")[1:3])
-        c.remove_service()
+        os.system("crackmapexec smb " + serverW + " -d " + domain + " -u " + user + " -p " + password + " -X 'whoami'")
     except:
-        print("Could not connect to host over pyPSexec: " + serverW)
-    finally:
-        c.disconnect()
+        print("Could not connect to host: " + serverW)
